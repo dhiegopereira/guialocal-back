@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using guialocal.Data;
 using guialocal.Models;
+using System.Threading.Tasks;
 
 namespace guialocal.Services
 {
@@ -22,38 +23,40 @@ namespace guialocal.Services
             }
 
             _context.Customers.Add(customer);
+            _context.SaveChanges();
 
             return customer;
         }
 
-        public Customer[] ReadAllByFilter(string title)
+        public Customer[] ReadByFilter(string? title)
         {
-            // Retorna uma lista de clientes filtrados pelo título
             return _context.Customers.Where(c => EF.Functions.Like(c.Title, $"%{title}%") && c.Active).ToArray();
         }
 
         public Customer ReadOne(string email)
         {
-            // Retorna um cliente pelo email
-            var customer = _context.Customers.FirstOrDefault(c => c.Email == email) ?? throw new Exception("Customer not found");
-            return customer;
+            return _context.Customers.FirstOrDefault(c => c.Email == email) ?? throw new Exception($"Não foi encontrado nenhuma clíente para esse email:  {email}");
         }
 
         public Customer Update(string email, Customer customerData)
         {
-            var customer = _context.Customers.FirstOrDefault(c => c.Email == email) ?? throw new Exception("Customer not found");
-            customer.Title = customerData.Title;
-            customer.Email = customerData.Email;
+            var customerExists = _context.Customers.FirstOrDefault(c => c.Email == email) ?? throw new Exception($"Não foi encontrado nenhuma clíente para esse email:  {email}");
+
+            customerExists.Title = customerData.Title;
+            customerExists.ZipCode = customerData.ZipCode;
+            customerExists.Number = customerData.Number;
+            customerExists.Address = customerData.Address;            
+            customerExists.Active = customerData.Active;
 
             _context.SaveChanges(); 
 
-            return customer;
+            return customerExists;
         }
 
         public void Delete(string email)
         {
-            var customer = _context.Customers.FirstOrDefault(c => c.Email == email) ?? throw new Exception("Customer not found");
-            _context.Customers.Remove(customer);
+            var customerExists = _context.Customers.FirstOrDefault(c => c.Email == email) ?? throw new Exception($"Não foi encontrado nenhuma clíente para esse email:  {email}");
+            _context.Customers.Remove(customerExists);
             _context.SaveChanges();
         }
     }

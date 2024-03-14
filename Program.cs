@@ -2,9 +2,9 @@ using Microsoft.OpenApi.Models;
 using guialocal.Data;
 using guialocal.Services;
 using guialocal.Middlewares;
-using guialocal.Middlewares.Schemas;
 using guialocal.Models;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,9 +14,9 @@ ConfigureDB(builder);
 
 ConfigureSwagger(builder);
 
-builder.Services.AddControllers();
+ConfigureScoped(builder);
 
-builder.Services.AddScoped<CustomerService>();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -26,10 +26,13 @@ app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Guia Local API v1");
-    //options.RoutePrefix = "";
 });
 
-app.MapControllers();
+app.UseRouting();
+
+app.UseAuthorization();
+
+app.UseEndpoints(endpoints => { _ = endpoints.MapControllers(); });
 
 app.Run();
 
@@ -43,7 +46,7 @@ void ConfigureDB(WebApplicationBuilder builder)
 void ConfigureSwagger(WebApplicationBuilder builder)
 {
     builder.Services.AddSwaggerGen(options => {
-        
+
         options.SwaggerDoc("v1", new OpenApiInfo
         {
             Title = "Guia Local API",
@@ -69,3 +72,15 @@ void ConfigureCors(WebApplicationBuilder builder)
         });
     });
 }
+
+void ConfigureScoped(WebApplicationBuilder builder)
+{
+    builder.Services.AddScoped<CustomerService>();
+
+    builder.Services.AddScoped<IValidator<Customer>, CustomerCreateValidator>();
+    builder.Services.AddScoped<IValidator<string?>, CustomerReadByFilterValidator>();
+    builder.Services.AddScoped<IValidator<string>, CustomerReadOneValidator>();
+    builder.Services.AddScoped<IValidator<(string, Customer)>, CustomerUpdateValidator>();
+    builder.Services.AddScoped<IValidator<string>, CustomerDeleteValidator>();
+}
+

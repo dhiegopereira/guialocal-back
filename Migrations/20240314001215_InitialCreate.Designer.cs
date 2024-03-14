@@ -11,7 +11,7 @@ using guialocal.Data;
 namespace guialocal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240313225120_InitialCreate")]
+    [Migration("20240314001215_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
